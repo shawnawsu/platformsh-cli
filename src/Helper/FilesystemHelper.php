@@ -190,10 +190,6 @@ class FilesystemHelper extends Helper {
                 $sourceFile = $source . '/' . $file;
                 $linkFile = $destination . '/' . $file;
 
-                if ($this->relative) {
-                    $sourceFile = $this->makePathRelative($sourceFile, $linkFile);
-                }
-
                 if (file_exists($linkFile)) {
                     if (is_link($linkFile)) {
                         unlink($linkFile);
@@ -209,6 +205,11 @@ class FilesystemHelper extends Helper {
                 if (!function_exists('symlink') && $this->copyIfSymlinkUnavailable) {
                     copy($sourceFile, $linkFile);
                     continue;
+                }
+
+                if ($this->relative) {
+                    $sourceFile = $this->makePathRelative($sourceFile, $linkFile);
+                    chdir($destination);
                 }
 
                 symlink($sourceFile, $linkFile);
