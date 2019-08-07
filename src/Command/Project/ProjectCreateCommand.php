@@ -12,6 +12,7 @@ use Platformsh\Cli\Command\Project\CreateConsoleForm;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\ArrayInput;
 
 class ProjectCreateCommand extends CommandBase
 {
@@ -35,7 +36,8 @@ class ProjectCreateCommand extends CommandBase
             ->addOption('timeout', null, InputOption::VALUE_REQUIRED, 'The total timeout for all API checks (0 to disable the timeout)', 900)
             ->addOption('template', null, InputOption::VALUE_REQUIRED, 'Choose a starting template or provide a url of one.')
             ->addOption('catalog', null, InputOption::VALUE_NONE, 'Choose a template from the catalog')            
-            ->addOption('initialize', null, InputOption::VALUE_NONE, 'Initialize the project after it has been created.');
+            ->addOption('initialize', null, InputOption::VALUE_NONE, 'Initialize the project after it has been created.')
+            ->addOption('current-repo', null, InputOption::VALUE_NONE, 'Automatically set-remote after project creation.');
 
 
         $this->setHelp(<<<EOF
@@ -195,6 +197,15 @@ the --template or --catalog options. For more information on this command please
         $this->stdErr->writeln("  Project title: <info>{$subscription->project_title}</info>");
         $this->stdErr->writeln("  URL: <info>{$subscription->project_ui}</info>");
 
+        if ($input->getOption('current-repo')) {
+            $command = $this->getApplication()->find('project:set-remote');
+            $arguments = [
+                'command' => 'project:set-remote',
+                'project'    => $subscription->project_id,
+            ];
+            $set_remote = new ArrayInput($arguments);
+            $command->run($set_remote, $output);
+        }
 
         return 0;
     }
